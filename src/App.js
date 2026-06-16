@@ -23,10 +23,14 @@ export default function App() {
 
     try {
       const response = await fetch(`${API_URL}/ask`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question, city }),
-      });
+  method: "POST",
+  headers: { 
+    "Content-Type": "application/json",
+    "Accept": "application/json"
+  },
+  mode: "cors",
+  body: JSON.stringify({ question, city }),
+});
       const data = await response.json();
       setMessages((prev) => [
         ...prev,
