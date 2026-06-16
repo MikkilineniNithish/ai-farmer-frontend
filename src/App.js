@@ -1,25 +1,211 @@
-import logo from './logo.svg';
-import './App.css';
+import { useState } from "react";
 
-function App() {
+const API_URL = "https://ai-farmer-assistant.onrender.com";
+
+export default function App() {
+  const [messages, setMessages] = useState([
+    {
+      role: "assistant",
+      text: "🌾 Namaste! I am your AI Farmer Assistant. Ask me anything about your crops, weather, or farming!",
+    },
+  ]);
+  const [question, setQuestion] = useState("");
+  const [city, setCity] = useState("Tirupati");
+  const [loading, setLoading] = useState(false);
+
+  const askQuestion = async () => {
+    if (!question.trim()) return;
+
+    const userMessage = { role: "user", text: question };
+    setMessages((prev) => [...prev, userMessage]);
+    setQuestion("");
+    setLoading(true);
+
+    try {
+      const response = await fetch(`${API_URL}/ask`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question, city }),
+      });
+      const data = await response.json();
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", text: data.answer },
+      ]);
+    } catch (error) {
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", text: "Sorry, something went wrong. Please try again!" },
+      ]);
+    }
+    setLoading(false);
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter") askQuestion();
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
+    <div style={styles.container}>
+      {/* Header */}
+      <div style={styles.header}>
+        <h1 style={styles.headerTitle}>🌾 AI Farmer Assistant</h1>
+        <p style={styles.headerSubtitle}>Smart farming advice powered by AI</p>
+      </div>
+
+      {/* City selector */}
+      <div style={styles.cityBar}>
+        <span style={styles.cityLabel}>📍 Your city:</span>
+        <input
+          style={styles.cityInput}
+          value={city}
+          onChange={(e) => setCity(e.target.value)}
+          placeholder="Enter city name"
+        />
+      </div>
+
+      {/* Chat messages */}
+      <div style={styles.chatBox}>
+        {messages.map((msg, index) => (
+          <div
+            key={index}
+            style={msg.role === "user" ? styles.userMessage : styles.botMessage}
+          >
+            <span style={styles.messageIcon}>
+              {msg.role === "user" ? "👨‍🌾" : "🤖"}
+            </span>
+            <p style={styles.messageText}>{msg.text}</p>
+          </div>
+        ))}
+        {loading && (
+          <div style={styles.botMessage}>
+            <span style={styles.messageIcon}>🤖</span>
+            <p style={styles.messageText}>Thinking... 🌤️</p>
+          </div>
+        )}
+      </div>
+
+      {/* Input box */}
+      <div style={styles.inputBar}>
+        <input
+          style={styles.input}
+          value={question}
+          onChange={(e) => setQuestion(e.target.value)}
+          onKeyPress={handleKeyPress}
+          placeholder="Ask about your crops, weather, irrigation..."
+        />
+        <button
+          style={styles.button}
+          onClick={askQuestion}
+          disabled={loading}
         >
-          Learn React
-        </a>
-      </header>
+          {loading ? "..." : "Ask 🌱"}
+        </button>
+      </div>
     </div>
   );
 }
 
-export default App;
+const styles = {
+  container: {
+    maxWidth: "700px",
+    margin: "0 auto",
+    height: "100vh",
+    display: "flex",
+    flexDirection: "column",
+    fontFamily: "Arial, sans-serif",
+    backgroundColor: "#f0f7f0",
+  },
+  header: {
+    backgroundColor: "#2d6a4f",
+    padding: "20px",
+    textAlign: "center",
+  },
+  headerTitle: {
+    color: "white",
+    margin: 0,
+    fontSize: "24px",
+  },
+  headerSubtitle: {
+    color: "#b7e4c7",
+    margin: "5px 0 0 0",
+    fontSize: "14px",
+  },
+  cityBar: {
+    backgroundColor: "#52b788",
+    padding: "10px 20px",
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+  },
+  cityLabel: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: "14px",
+  },
+  cityInput: {
+    padding: "5px 10px",
+    borderRadius: "15px",
+    border: "none",
+    fontSize: "14px",
+    width: "150px",
+  },
+  chatBox: {
+    flex: 1,
+    overflowY: "auto",
+    padding: "20px",
+    display: "flex",
+    flexDirection: "column",
+    gap: "15px",
+  },
+  userMessage: {
+    display: "flex",
+    alignItems: "flex-start",
+    gap: "10px",
+    flexDirection: "row-reverse",
+  },
+  botMessage: {
+    display: "flex",
+    alignItems: "flex-start",
+    gap: "10px",
+  },
+  messageIcon: {
+    fontSize: "24px",
+    flexShrink: 0,
+  },
+  messageText: {
+    backgroundColor: "white",
+    padding: "12px 16px",
+    borderRadius: "15px",
+    margin: 0,
+    fontSize: "15px",
+    lineHeight: "1.5",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+    maxWidth: "80%",
+  },
+  inputBar: {
+    padding: "15px 20px",
+    backgroundColor: "white",
+    display: "flex",
+    gap: "10px",
+    boxShadow: "0 -2px 10px rgba(0,0,0,0.1)",
+  },
+  input: {
+    flex: 1,
+    padding: "12px 16px",
+    borderRadius: "25px",
+    border: "2px solid #52b788",
+    fontSize: "15px",
+    outline: "none",
+  },
+  button: {
+    padding: "12px 24px",
+    backgroundColor: "#2d6a4f",
+    color: "white",
+    border: "none",
+    borderRadius: "25px",
+    fontSize: "15px",
+    cursor: "pointer",
+    fontWeight: "bold",
+  },
+};
