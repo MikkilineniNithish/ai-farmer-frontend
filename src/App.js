@@ -3,6 +3,7 @@ import { supabase } from "./supabaseClient";
 import Auth from "./Auth";
 
 const API_URL = "https://ai-farmer-assistant.onrender.com";
+const VERSION = "2.0.0"; // force cache bust
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -37,6 +38,7 @@ export default function App() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
+    setUser(null);
     setMessages([{
       role: "assistant",
       text: "🌾 Namaste! I am your AI Farmer Assistant. Ask me anything about your crops, weather, or farming!",
@@ -120,17 +122,15 @@ export default function App() {
 
   return (
     <div style={styles.container}>
-      {/* Header */}
       <div style={styles.header}>
         <h1 style={styles.headerTitle}>🌾 AI Farmer Assistant</h1>
-        <p style={styles.headerSubtitle}>Smart farming advice powered by AI</p>
+        <p style={styles.headerSubtitle}>Smart farming advice powered by AI v{VERSION}</p>
         <div style={styles.userBar}>
           <span style={styles.userEmail}>👤 {user.email}</span>
           <button style={styles.logoutBtn} onClick={handleLogout}>Logout</button>
         </div>
       </div>
 
-      {/* City selector */}
       <div style={styles.cityBar}>
         <span style={styles.cityLabel}>📍 Your city:</span>
         <input
@@ -141,7 +141,6 @@ export default function App() {
         />
       </div>
 
-      {/* Tabs */}
       <div style={styles.tabBar}>
         <button style={activeTab === "chat" ? styles.tabActive : styles.tab} onClick={() => setActiveTab("chat")}>
           💬 Chat
@@ -154,7 +153,6 @@ export default function App() {
         </button>
       </div>
 
-      {/* Chat Tab */}
       {activeTab === "chat" && (
         <>
           <div style={styles.chatBox}>
@@ -190,7 +188,6 @@ export default function App() {
         </>
       )}
 
-      {/* Disease Detector Tab */}
       {activeTab === "disease" && (
         <div style={styles.diseaseBox}>
           <h2 style={styles.diseaseTitle}>🔬 Crop Disease Detector</h2>
@@ -211,7 +208,6 @@ export default function App() {
         </div>
       )}
 
-      {/* History Tab */}
       {activeTab === "history" && (
         <div style={styles.historyBox}>
           <h2 style={styles.historyTitle}>📜 My Conversations</h2>
