@@ -93,6 +93,8 @@ export default function App() {
     setDiagnosis(null);
     const formData = new FormData();
     formData.append("image", file);
+    formData.append("user_id", user?.id || "");
+    formData.append("city", city);
     try {
       const response = await fetch(`${API_URL}/detect-disease`, {
         method: "POST",
