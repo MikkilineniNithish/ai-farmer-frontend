@@ -3,7 +3,7 @@ import { supabase } from "./supabaseClient";
 import Auth from "./Auth";
 
 const API_URL = "https://ai-farmer-assistant.onrender.com";
-const VERSION = "2.0.0"; // force cache bust
+const VERSION = "2.1.0";
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -22,6 +22,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState("chat");
   const [history, setHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [usingGPS, setUsingGPS] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -44,6 +45,24 @@ export default function App() {
       text: "🌾 Namaste! I am your AI Farmer Assistant. Ask me anything about your crops, weather, or farming!",
     }]);
     setHistory([]);
+  };
+
+  const detectLocation = () => {
+    if (!navigator.geolocation) {
+      alert("GPS not supported on your device!");
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const coords = `${position.coords.latitude},${position.coords.longitude}`;
+        setCity(coords);
+        setUsingGPS(true);
+      },
+      () => {
+        alert("Could not detect location. Please enter city manually!");
+        setUsingGPS(false);
+      }
+    );
   };
 
   const askQuestion = async () => {
@@ -132,13 +151,25 @@ export default function App() {
       </div>
 
       <div style={styles.cityBar}>
-        <span style={styles.cityLabel}>📍 Your city:</span>
-        <input
-          style={styles.cityInput}
-          value={city}
-          onChange={(e) => setCity(e.target.value)}
-          placeholder="Enter city name"
-        />
+        <span style={styles.cityLabel}>📍 Location:</span>
+        {!usingGPS ? (
+          <input
+            style={styles.cityInput}
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            placeholder="Enter city name"
+          />
+        ) : (
+          <span style={styles.gpsText}>📡 GPS detected</span>
+        )}
+        <button style={styles.gpsBtn} onClick={detectLocation}>
+          {usingGPS ? "📡 GPS ✅" : "📡 Use GPS"}
+        </button>
+        {usingGPS && (
+          <button style={styles.gpsClearBtn} onClick={() => { setCity("Tirupati"); setUsingGPS(false); }}>
+            ✕
+          </button>
+        )}
       </div>
 
       <div style={styles.tabBar}>
@@ -244,7 +275,10 @@ const styles = {
   logoutBtn: { padding: "4px 12px", backgroundColor: "transparent", color: "#b7e4c7", border: "1px solid #b7e4c7", borderRadius: "15px", cursor: "pointer", fontSize: "12px" },
   cityBar: { backgroundColor: "#52b788", padding: "10px 20px", display: "flex", alignItems: "center", gap: "10px" },
   cityLabel: { color: "white", fontWeight: "bold", fontSize: "14px" },
-  cityInput: { padding: "5px 10px", borderRadius: "15px", border: "none", fontSize: "14px", width: "150px" },
+  cityInput: { padding: "5px 10px", borderRadius: "15px", border: "none", fontSize: "14px", width: "120px" },
+  gpsText: { color: "white", fontSize: "13px", fontStyle: "italic" },
+  gpsBtn: { padding: "5px 10px", backgroundColor: "#1b4332", color: "white", border: "none", borderRadius: "15px", cursor: "pointer", fontSize: "12px" },
+  gpsClearBtn: { padding: "4px 8px", backgroundColor: "transparent", color: "white", border: "1px solid white", borderRadius: "50%", cursor: "pointer", fontSize: "12px" },
   tabBar: { display: "flex", backgroundColor: "#1b4332" },
   tab: { flex: 1, padding: "12px", border: "none", backgroundColor: "#1b4332", color: "#b7e4c7", fontSize: "14px", cursor: "pointer" },
   tabActive: { flex: 1, padding: "12px", border: "none", backgroundColor: "#2d6a4f", color: "white", fontSize: "14px", cursor: "pointer", fontWeight: "bold", borderBottom: "3px solid #74c69d" },
