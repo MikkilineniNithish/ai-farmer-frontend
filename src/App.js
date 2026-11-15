@@ -253,7 +253,7 @@ export default function App() {
               <div style={styles.historyMeta}>
                 <span style={styles.historyCity}>📍 {conv.city}</span>
                 <span style={styles.historyTime}>
-                  {new Date(conv.created_at).toLocaleString()}
+                  {new Date(conv.created_at).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}
                 </span>
               </div>
               <p style={styles.historyQuestion}>👨‍🌾 {conv.question}</p>
